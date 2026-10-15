@@ -1,97 +1,56 @@
-# 👁️ Face Direction Detection
+# Face Direction Detection
 
-A **real-time head orientation detection system** built with Python, CNN, and OpenCV. Uses facial landmark extraction and Kalman filtering to deliver smooth, stable directional prediction from a live webcam feed.
+Real-time face direction detection in the browser. The app finds 468 face landmarks in your webcam feed with
+TensorFlow.js and MediaPipe FaceMesh, then measures how far your head is turned and tilted from the position of
+your nose.
 
----
+## Credits
 
-##  Features
+This code comes from [sshadmand/face-direction-detection](https://github.com/sshadmand/face-direction-detection),
+which follows Nicholas Renotte's tutorial
+[Real Time AI Face Landmark Detection with TensorFlow.js and React](https://www.youtube.com/watch?v=7lXYGDVHUNw).
+I used it as the base of my B.Tech mini project. My project report and slides are in `Report.pdf` and
+`presentation.ppt`.
 
-- 🎯 **Real-time head pose estimation** — detects Left, Right, Up, Down, and Forward orientation
-- 🧠 **Pre-trained CNN model** for facial landmark extraction — improved detection accuracy by **30%**
-- 📉 **Kalman filtering** for smoother, more stable directional tracking — reduces jitter between frames
-- ⚡ **Optimised inference** — improved application interactivity by **25%**
-- 🎥 **Live webcam input** — runs entirely on-device with no cloud dependency
+## How it works
 
----
+```
+Webcam frame
+  → MediaPipe FaceMesh (TensorFlow.js) finds 468 face landmarks
+  → Take the nose tip and the two sides of the nose
+  → Turn angle: angle between the nose tip and the side of the nose (left / right)
+  → Tilt angle: angle between the nose line and the vertical (up / down)
+  → Draw the mesh, the landmark numbers and both angles on a canvas
+```
 
-## Tech Stack
+Detection runs about three times a second, entirely in the browser. No video leaves your computer.
 
-| Component | Technology |
-|---|---|
-| Language | Python |
-| Deep Learning | CNN (pre-trained model) |
-| Computer Vision | OpenCV |
-| Tracking / Smoothing | Kalman Filter |
-| Landmark Extraction | Pre-trained CNN model |
+## Run it
 
----
-
-##  Getting Started
-
-**Requirements:** Python 3.8+, a webcam
+You need [Node.js](https://nodejs.org) and a webcam.
 
 ```bash
-# Clone the repo
 git clone https://github.com/Manishmaurya89/Face-direction-detection.git
 cd Face-direction-detection
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the app
-python main.py
+npx yarn install
+npx yarn start
 ```
 
----
+Open [http://localhost:3000](http://localhost:3000) and allow camera access. Use the checkboxes to show the mesh,
+the landmark numbers and the direction angles.
 
-## 📁 Project Structure
-
-```
-Face-direction-detection/
-├── main.py             # Entry point — webcam loop & direction output
-├── detector.py         # CNN model loading & facial landmark inference
-├── kalman.py           # Kalman filter for prediction smoothing
-├── utils.py            # Helper functions
-├── requirements.txt
-└── README.md
-```
-
----
-
-##  How It Works
+## Project structure
 
 ```
-Webcam Frame
-     ↓
-Face Detection (OpenCV)
-     ↓
-Facial Landmark Extraction (pre-trained CNN)
-     ↓
-Head Pose Estimation (yaw / pitch angles)
-     ↓
-Kalman Filter (smoothing over frames)
-     ↓
-Direction Output: LEFT / RIGHT / UP / DOWN / FORWARD
+.
+├── public/index.html          page template
+├── src/App.js                 webcam, canvas and checkboxes
+├── src/utils/detector.js      loads FaceMesh and runs detection in a loop
+├── src/utils/drawMesh.js      draws the mesh and calculates the turn and tilt angles
+├── src/utils/triangulation.js landmark triangles for drawing the mesh
+└── package.json
 ```
 
----
+## Tech stack
 
-##  Use Cases
-
-- **Driver drowsiness / distraction detection** — alert when gaze leaves the road
-- **Attention monitoring** — e-learning, proctoring, focus tracking
-- **Accessibility tools** — gaze-based hands-free UI control
-- **AR overlays** — anchor effects to head orientation in real time
-
----
-
-##  Contact
-
-For questions: **manish.maurya0408@gmail.com**
-
----
-
-##  License
-
-free to use and modify.
-
+JavaScript · React · TensorFlow.js · MediaPipe FaceMesh · HTML5 Canvas
