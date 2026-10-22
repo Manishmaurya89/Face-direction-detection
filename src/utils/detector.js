@@ -1,7 +1,11 @@
 // https://magdazelezik.medium.com/face-landmark-detection-in-react-the-right-way-3bcd63e1d108
 import * as faceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
 import { drawMesh } from "./drawMesh";
-const DRAW_DELAY = 300; //ms
+
+const DRAW_DELAY_MS = 300;
+
+// Runs face detection on the webcam video every DRAW_DELAY_MS, draws the
+// result on the canvas and passes the head angles to `cb`.
 export const runDetector = async (video, canvas, cb) => {
   const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
   const detectorConfig = {
@@ -21,8 +25,7 @@ export const runDetector = async (video, canvas, cb) => {
         cb(angle)
       });
       detect(detector);
-    }, DRAW_DELAY);
+    }, DRAW_DELAY_MS);
   };
   detect(detector);
-  return <></>;
 };

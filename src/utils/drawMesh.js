@@ -1,45 +1,37 @@
 import { TRIANGULATION } from "./triangulation";
 
-let SHOW_MESH  = true
-let SHOW_TAG_NUMBERS = true
-let DRAW_DIRECTION = true
-
+// Draws the face and returns the head angles. The three checkboxes in App.js
+// decide what gets drawn.
 export const drawMesh = (prediction, ctx) => {
-  SHOW_MESH = document.getElementById('show-mesh').checked
-  SHOW_TAG_NUMBERS = document.getElementById('show-tags').checked
-  DRAW_DIRECTION = document.getElementById('show-dir').checked
+  const showMesh = document.getElementById("show-mesh").checked;
+  const showTagNumbers = document.getElementById("show-tags").checked;
+  const showDirection = document.getElementById("show-dir").checked;
 
   if (!prediction) return;
   const keyPoints = prediction.keypoints;
   if (!keyPoints || keyPoints.length === 0) return;
 
-  // CLEAR CANVAS
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-  // DRAW AND CALCULATE STUFF
-  drawFaceMesh(ctx, keyPoints, SHOW_TAG_NUMBERS, SHOW_MESH);
-  return calculateDirection(ctx, keyPoints, DRAW_DIRECTION);
+  drawFaceMesh(ctx, keyPoints, showTagNumbers, showMesh);
+  return calculateDirection(ctx, keyPoints, showDirection);
 };
 
+// Both angles are measured at the back of the nose: yaw is between straight up
+// and the nose tip, turn is between the right side of the nose and the nose tip.
+// The keypoint indices are MediaPipe FaceMesh landmarks.
 function calculateDirection(ctx, keyPoints, draw) {
-  let noseTip, leftNose, rightNose;
-  try {
-    noseTip = { ...keyPoints[1], name: "nose tip" };
-    leftNose = { ...keyPoints[279], name: "left nose" };
-    rightNose = { ...keyPoints[49], name: "right nose" };
-  } catch (error) {
-    console.log("error creating directional points", keyPoints, error);
-  }
+  const noseTip = keyPoints[1];
+  const leftNose = keyPoints[279];
+  const rightNose = keyPoints[49];
 
-  // MIDESCTION OF NOSE IS BACK OF NOSE PERPENDICULAR
+  // Midpoint between the nostrils, i.e. the back of the nose.
   const midpoint = {
     x: (leftNose.x + rightNose.x) / 2,
     y: (leftNose.y + rightNose.y) / 2,
     z: (leftNose.z + rightNose.z) / 2,
   };
-  const perpendicularUp = { x: midpoint.x, y: midpoint.y - 50, z:  midpoint.z };
+  const perpendicularUp = { x: midpoint.x, y: midpoint.y - 50, z: midpoint.z };
 
-  // CALC ANGLES
   const yaw = getAngleBetweenLines(midpoint, noseTip, perpendicularUp);
   const turn = getAngleBetweenLines(midpoint, rightNose, noseTip);
 
@@ -68,11 +60,10 @@ function calculateDirection(ctx, keyPoints, draw) {
     ctx.fill(region);
   }
 
-  // CALC DISTANCE BETWEEN NOSE TIP AND MIDPOINT, AND LEFT AND RIGHT NOSE POINTS
-  const zDistance = getDistanceBetweenPoints(noseTip, midpoint)
-  const xDistance = getDistanceBetweenPoints(leftNose, rightNose)
+  const zDistance = getDistanceBetweenPoints(noseTip, midpoint);
+  const xDistance = getDistanceBetweenPoints(leftNose, rightNose);
 
-  return {yaw, turn, zDistance, xDistance}
+  return { yaw, turn, zDistance, xDistance };
 }
 
 function getDistanceBetweenPoints(point1, point2) {
@@ -81,27 +72,16 @@ function getDistanceBetweenPoints(point1, point2) {
   return Math.sqrt(xDistance * xDistance + yDistance * yDistance);
 }
 
+// Angle in degrees at `midpoint` between the lines to point1 and point2 (2D only).
 function getAngleBetweenLines(midpoint, point1, point2) {
   const vector1 = { x: point1.x - midpoint.x, y: point1.y - midpoint.y };
   const vector2 = { x: point2.x - midpoint.x, y: point2.y - midpoint.y };
 
-  // Calculate the dot product of the two vectors
   const dotProduct = vector1.x * vector2.x + vector1.y * vector2.y;
+  const magnitude1 = Math.hypot(vector1.x, vector1.y);
+  const magnitude2 = Math.hypot(vector2.x, vector2.y);
 
-  // Calculate the magnitudes of the vectors
-  const magnitude1 = Math.sqrt(vector1.x * vector1.x + vector1.y * vector1.y);
-  const magnitude2 = Math.sqrt(vector2.x * vector2.x + vector2.y * vector2.y);
-
-  // Calculate the cosine of the angle between the two vectors
-  const cosineTheta = dotProduct / (magnitude1 * magnitude2);
-
-  // Use the arccosine function to get the angle in radians
-  const angleInRadians = Math.acos(cosineTheta);
-
-  // Convert the angle to degrees
-  const angleInDegrees = (angleInRadians * 180) / Math.PI;
-
-  return angleInDegrees;
+  return (Math.acos(dotProduct / (magnitude1 * magnitude2)) * 180) / Math.PI;
 }
 
 function drawFaceMesh(ctx, keyPoints, writeTagNumbers, drawLines) {
@@ -119,8 +99,7 @@ function drawFaceMesh(ctx, keyPoints, writeTagNumbers, drawLines) {
   }
 }
 
-function drawMeshPaths(keyPoints, ctx, off) {
-  if (off) return;
+function drawMeshPaths(keyPoints, ctx) {
   for (let i = 0; i < TRIANGULATION.length / 3; i++) {
     const points = [
       TRIANGULATION[i * 3],
@@ -139,6 +118,6 @@ function drawPath(ctx, points, closePath) {
     region.lineTo(point.x, point.y);
   }
   if (closePath) region.closePath();
-  ctx.stokeStyle = "black";
+  ctx.strokeStyle = "black";
   ctx.stroke(region);
 }

@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import "@tensorflow/tfjs";
-// Register WebGL backend.
 import "@tensorflow/tfjs-backend-webgl";
 import "@mediapipe/face_mesh";
 import Webcam from "react-webcam";
@@ -15,6 +14,7 @@ const videoConstraints = {
   height: inputResolution.height,
   facingMode: "user",
 };
+
 function App() {
   const canvasRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
@@ -52,7 +52,6 @@ function App() {
           style={{ position: "absolute", border: "1px solid black" }}
         />
       </div>
-      
     </div>
   );
 }
